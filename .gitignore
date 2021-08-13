@@ -1,0 +1,13 @@
+# metals
+.metals
+.bloop
+project/**/metals.sbt
+
+# sbt
+.bsp
+/target/
+/project/**/target/
+
+# tmp
+tmp/*
+!tmp/.keep

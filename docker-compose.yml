@@ -1,0 +1,54 @@
+version: "3.8"
+
+x-spark-worker: &default-spark-worker
+  image: docker.io/bitnami/spark:3.1.2
+  depends_on: [master]
+  environment:
+    SPARK_MODE: worker
+    SPARK_MASTER_URL: spark://master:7077
+    SPARK_WORKER_MEMORY: 2G
+    SPARK_WORKER_CORES: "2"
+    SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+    SPARK_RPC_ENCRYPTION_ENABLED: "no"
+    SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+    SPARK_SSL_ENABLED: "no"
+
+services:
+  console:
+    build: ./.devcontainer
+    # see https://code.visualstudio.com/docs/remote/devcontainerjson-reference#_devcontainerjson-properties `overrideCommand`
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    environment:
+      HADOOP_USER_NAME: spark
+      SPARK_MASTER_URL: spark://master:7077
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes: 
+      - .:/workspace:cached
+  # see  https://github.com/bitnami/bitnami-docker-spark/blob/3.1.2-debian-10-r58/docker-compose.yml
+  master:
+    image: docker.io/bitnami/spark:3.1.2
+    environment:
+      SPARK_MODE: master
+      SPARK_MASTER_OPTS: "-Dspark.deploy.defaultCores=1"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - '8080:8080'
+  worker-1:
+    <<: *default-spark-worker 
+  worker-2:
+    <<: *default-spark-worker
+  # see  https://docs.soda.io/soda-sql/5_min_tutorial.html#create-a-sample-warehouse-optional
+  db:
+    image: postgres:9.6.17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - ./data:/var/lib/postgresql/csv
