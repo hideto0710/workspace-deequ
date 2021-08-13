@@ -1,0 +1,20 @@
+{
+  "name": "Workspace Deequ",
+  "dockerComposeFile": "../docker-compose.yml",
+  "workspaceFolder": "/workspace",
+  "service": "console",
+  "settings": {
+    "java.home": "/docker-java-home",
+		"java.configuration.runtimes": [{
+			"default": true,
+			"name": "JavaSE-1.8",
+			"path": "/usr/local/sdkman/candidates/java/current"
+		}]
+  },
+  "extensions": [
+		"vscjava.vscode-java-pack",
+    "scalameta.metals"
+	],
+  "remoteUser": "vscode",
+  "postCreateCommand": ".devcontainer/postCreateCommand.sh"
+}
