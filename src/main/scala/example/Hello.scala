@@ -1,21 +1,15 @@
 package example
 
-import Utils.{withSpark, itemsAsDataframe}
+import Utils.{tableAsDataframe, withSpark}
 import com.amazon.deequ.VerificationSuite
 import com.amazon.deequ.checks.{Check, CheckLevel, CheckStatus}
 import com.amazon.deequ.constraints.ConstraintStatus
 
 object Hello extends App {
-  withSpark { session =>
-    val table = "demodata"
-    val data = session.read
-      .format("jdbc")
-      .option("url", s"jdbc:postgresql://${System.getenv("POSTGRES_HOST")}/${System.getenv("POSTGRES_DB")}")
-      .option("dbtable", s"public.$table")
-      .option("user", System.getenv("POSTGRES_USER"))
-      .load()
-    
-      val verificationResult = VerificationSuite()
+  withSpark { implicit session =>
+    val data = tableAsDataframe("demodata")
+
+    val verificationResult = VerificationSuite()
       .onData(data)
       .addCheck(
         Check(CheckLevel.Error, "integrity checks")

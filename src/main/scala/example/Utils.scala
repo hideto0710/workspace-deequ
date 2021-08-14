@@ -2,14 +2,6 @@ package example
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-case class Item(
-  id: Long,
-  productName: String,
-  description: String,
-  priority: String,
-  numViews: Long
-)
-
 object Utils {
   def withSpark(func: SparkSession => Unit): Unit = {
     val session = SparkSession.builder()
@@ -26,8 +18,12 @@ object Utils {
     }
   }
 
-  def itemsAsDataframe(session: SparkSession, items: Item*): DataFrame = {
-    val rdd = session.sparkContext.parallelize(items)
-    session.createDataFrame(rdd)
+  def tableAsDataframe(table: String)(implicit session: SparkSession): DataFrame = {
+    session.read
+      .format("jdbc")
+      .option("url", s"jdbc:postgresql://${System.getenv("POSTGRES_HOST")}/${System.getenv("POSTGRES_DB")}")
+      .option("dbtable", s"public.$table")
+      .option("user", System.getenv("POSTGRES_USER"))
+      .load()
   }
 }
